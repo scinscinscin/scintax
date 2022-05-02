@@ -30,31 +30,6 @@ class Parser{
 		return logical();
 	}
 
-	//public Expr index_access(){
-	//	Expr expr = assignment();
-	//	
-	//	while(match(TokenType.L_SQ_BRACE)){
-	//		Expr index = expression();
-	//		CheckAndConsume(TokenType.R_SQ_BRACE, "Expected R_BRACE after index expression");
-	//		expr = new IndexAccessExpr(expr, index);
-	//	}
-		
-	//	return expr;
-	//} 
-	
-	//public Expr assignment(){
-	//	Expr expr = logical();
-	//
-	//	if(match(TokenType.EQUAL)){
-	//		Expr val = expression();
-	//		if(expr.GetType() == typeof(VariableExpr)) 
-	//			return new AssignmentExpr(((VariableExpr) expr).identifier, val);
-	//		throw new Exception("Attempted to assign to a non-identifier expression");
-	//	}
-	//	
-	//	return expr;
-	//}
-	
 	// expression parsers{{{
 	public Expr logical(){
 		Expr expr = equality();
@@ -111,48 +86,56 @@ class Parser{
 		else if(match(TokenType.FALSE)) return new LiteralExpr(false);
 		else if(match(TokenType.TRUE)) return new LiteralExpr(true);
 		else if(match(TokenType.NULL)) return new LiteralExpr(null);
+		else if(match(TokenType.L_SQ_BRACE)) return array();
+		else if(match(TokenType.IDENTIFIER)) return identifier();
+	
 		else if(match(TokenType.L_PAREN)) {
 			Expr expr = expression(); // it's the beginning of an expression
 			// the next term must be a right parenthesis to close of the expression;
 			CheckAndConsume(TokenType.R_PAREN, "Expected right parenthesis at the end of an expression.");
 			return new GroupingExpr(expr);
-		}else if(match(TokenType.L_SQ_BRACE)){
-			// handle the start of an array
-			List<Expr> expressions = new List<Expr>();
-
-			while(!match(TokenType.R_SQ_BRACE)){
-				expressions.Add(expression());
-				match(TokenType.COMMA);
-			}
-			
-			return new ArrayCreationExpr(expressions);
-		}else if(match(TokenType.IDENTIFIER)){
-			Expr expr = new VariableExpr(PreviousToken);
-
-			// handle the start of an identifier/calling/variable access chain
-			while(true){
-				if(match(TokenType.EQUAL)){
-					// assignment operation
-					Expr val = expression();
-					return new AssignmentExpr(expr, val);
-				}else if(match(TokenType.DOT)){
-					CheckAndConsume(TokenType.IDENTIFIER, "Expected IDENTIFIER token after Dot access.");
-					Token nextIdent = PreviousToken;
-					expr = new DotAccessExpr(expr, nextIdent);		
-				}else if(match(TokenType.L_SQ_BRACE)){
-					Expr index = expression();
-					CheckAndConsume(TokenType.R_SQ_BRACE, "Expected R_SQ_BRACE token after index access expression");	
-					expr = new IndexAccessExpr(expr, index);
-				}else{
-					break;
-				}			
-			}
-			
-			return expr;
-		} 
+		}
 		
 		throw new Exception($"Was not able to match a token of type {CurrentToken.type}.");
-	}/*}}}*/
+	}
+
+	public Expr identifier(){
+		Expr expr = new VariableExpr(PreviousToken);
+
+		// handle the start of an identifier/calling/variable access chain
+		while(true){
+			if(match(TokenType.EQUAL)){
+				// assignment operation
+				Expr val = expression();
+				return new AssignmentExpr(expr, val);
+			}else if(match(TokenType.DOT)){
+				CheckAndConsume(TokenType.IDENTIFIER, "Expected IDENTIFIER token after Dot access.");
+				Token nextIdent = PreviousToken;
+				expr = new DotAccessExpr(expr, nextIdent);		
+			}else if(match(TokenType.L_SQ_BRACE)){
+				Expr index = expression();
+				CheckAndConsume(TokenType.R_SQ_BRACE, "Expected R_SQ_BRACE token after index access expression");	
+				expr = new IndexAccessExpr(expr, index);
+			}else{
+				break;
+			}			
+		}
+			
+		return expr;
+	}
+
+	public Expr array(){
+		// handle the start of an array
+		List<Expr> expressions = new List<Expr>();
+		while(!match(TokenType.R_SQ_BRACE)){
+			expressions.Add(expression());
+			match(TokenType.COMMA);
+		}
+		
+		return new ArrayCreationExpr(expressions);
+	}
+
+	/*}}}*/
 	
 	// statement parsers{{{
 	public Stmt declaration(){

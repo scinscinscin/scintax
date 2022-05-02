@@ -74,9 +74,6 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 		else if(expr.op.type == TokenType.LESS_THAN) return new SIMPBool(lh.GetDouble() < rh.GetDouble());
 		else if(expr.op.type == TokenType.LESS_EQUALS) return new SIMPBool(lh.GetDouble() <= rh.GetDouble());
 		
-		// logical operators
-		else if(expr.op.type == TokenType.PIPE_PIPE) return new SIMPBool(lh.GetBoolean() || rh.GetBoolean());
-		else if(expr.op.type == TokenType.AMPERSAND_AMPERSAND) return new SIMPBool(lh.GetBoolean() && rh.GetBoolean());
 		throw new Exception($"Invalid Binary expression operator of {expr.op.type}");
 	}
 
