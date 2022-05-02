@@ -3,6 +3,7 @@ using System;
 interface ExprVisitor<T>{
 	T visitLiteralExpr(LiteralExpr expr);
 	T visitBinaryExpr(BinaryExpr expr);
+	T visitShortCircuitExpr(ShortCircuitExpr expr);
 	T visitUnaryExpr(UnaryExpr expr);
 	T visitGroupingExpr(GroupingExpr expr);
 	T visitVariableExpr(VariableExpr expr);
@@ -37,6 +38,19 @@ class BinaryExpr : Expr{
 		this.righthand = righthand;
 	}
 	public override T accept<T>(ExprVisitor<T> visitor){ return visitor.visitBinaryExpr(this); }
+}
+
+class ShortCircuitExpr : Expr{
+	public readonly Expr lefthand;
+	public readonly Token op;
+	public readonly Expr righthand;
+
+	public ShortCircuitExpr(Expr lefthand, Token op, Expr righthand){
+		this.lefthand = lefthand;
+		this.op = op;
+		this.righthand = righthand;
+	}
+	public override T accept<T>(ExprVisitor<T> visitor){ return visitor.visitShortCircuitExpr(this); }
 }
 
 class UnaryExpr : Expr{

@@ -59,7 +59,7 @@ class Parser{
 	public Expr logical(){
 		Expr expr = equality();
 		while(match(TokenType.PIPE_PIPE, TokenType.AMPERSAND_AMPERSAND))
-			expr = new BinaryExpr(expr, PreviousToken, equality());
+			expr = new ShortCircuitExpr(expr, PreviousToken, equality());
 		return expr;
 	}
 	

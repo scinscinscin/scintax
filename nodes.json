@@ -4,6 +4,7 @@
 		"subclasses": [
 			"Literal : object? val",
 			"Binary : Expr lefthand, Token op, Expr righthand",
+			"ShortCircuit : Expr lefthand, Token op, Expr righthand",
 			"Unary : Token op, Expr expr",
 			"Grouping : Expr contents",
 			"Variable : Token identifier",

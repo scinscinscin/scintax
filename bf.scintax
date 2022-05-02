@@ -31,7 +31,7 @@ while(isFinished == false){
 			
 			if(tape_value == 0 || tape_value == null){
 				// if the current tape value is 0, remove itself from the list if it is the head
-				if(list != null) if(list[0] == program_char_index) list = list[1];
+				if(list != null && list[0] == program_char_index) list = list[1];
 				
 				// iterate until the matching closing bracket
 				var found_l_bracket = 0;
@@ -45,15 +45,9 @@ while(isFinished == false){
 				}
 			}else{
 				// if the current tape value is not 0, add itself to the list if it is not the head
-				// It is written like this because the interpreter does not support short circuiting
-				var create_new_node = false;
-				if(list == null) create_new_node = true;
-				else if(list[0] != program_char_index) create_new_node = true; // this is only evaluated if stack is not null
-				if(create_new_node) list = [program_char_index, list];
+				if((list == null) || (list[0] != program_char_index)) list = [program_char_index, list];
 			}
 		}
-
-		else print("Unexpected character found\n");
 
 		program_char_index = program_char_index + 1;
 	}

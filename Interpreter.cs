@@ -31,6 +31,22 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 		throw new Exception($"Invalid Unary expression operator of {expr.op.type}");
 	}
 
+	public SIMPValue visitShortCircuitExpr(ShortCircuitExpr expr){
+		bool lhside = expression(expr.lefthand).GetBoolean();
+		
+		if(expr.op.type == TokenType.PIPE_PIPE){
+			if(lhside) return new SIMPBool(true);
+			// we only want to evaluate the right hand side if the left is false in the case of logical OR
+			return new SIMPBool(expression(expr.righthand).GetBoolean());
+		}else if(expr.op.type == TokenType.AMPERSAND_AMPERSAND){
+			if(!lhside) return new SIMPBool(false);
+			// only evaluate the right hand side if the left is true
+			return new SIMPBool(expression(expr.righthand).GetBoolean());
+		}
+
+		else throw new Exception($"Invalid Short Circuit expression operator of {expr.op.type}");
+	}
+
 	public SIMPValue visitBinaryExpr(BinaryExpr expr){
 		SIMPValue lh = expr.lefthand.accept(this);
 		SIMPValue rh = expr.righthand.accept(this);
