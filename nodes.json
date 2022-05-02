@@ -1,0 +1,28 @@
+{
+	"Expr": {
+		"is_generic": true,
+		"subclasses": [
+			"Literal : object? val",
+			"Binary : Expr lefthand, Token op, Expr righthand",
+			"Unary : Token op, Expr expr",
+			"Grouping : Expr contents",
+			"Variable : Token identifier",
+			"Assignment : Expr writelocation, Expr val",
+			"IndexAccess : Expr contents, Expr index",
+			"DotAccess : Expr contents, Token ident",
+			"FunctionCall : Expr function, List<Expr> parameters",
+			"ArrayCreation : List<Expr> expressions"
+		]
+	}, 
+	"Stmt": {
+		"is_generic": false,
+		"subclasses": [
+			"Print : Expr expr", 
+			"Variable : Token identifier, Expr? val",
+			"Expression : Expr expr",
+			"Block : List<Stmt> statements",
+			"If : Expr condition, Stmt true_stmt, Stmt? false_stmt",
+			"While : Expr condition, Stmt stmt"
+		]
+	}
+}

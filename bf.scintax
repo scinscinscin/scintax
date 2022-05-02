@@ -1,0 +1,61 @@
+var tape = [];	
+var tape_index = 0;
+var program = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.";
+var program_char_index = 0;
+var list = null;
+var isFinished = false;
+
+while(isFinished == false){
+	if(program_char_index >= program.length){
+		isFinished = true;
+		print("Finished executing bf program\n");
+	}else{
+		var current_char = program[program_char_index];
+		
+		if(current_char == "+") {
+			if(tape[tape_index] == null) tape[tape_index] = 1;
+			else tape[tape_index] = tape[tape_index] + 1;
+		}
+		else if(current_char == "-") tape[tape_index] = tape[tape_index] - 1;
+		else if(current_char == ">") tape_index = tape_index + 1;
+		else if(current_char == "<") tape_index = tape_index - 1;
+		else if(current_char == ".") print(tape[tape_index]);
+		
+		else if(current_char == "]"){
+			if(list == null) print("Invalid program state reached\n");
+			else program_char_index = list[0] - 1;
+		}
+
+		else if(current_char == "["){
+			var tape_value = tape[tape_index];
+			
+			if(tape_value == 0 || tape_value == null){
+				// if the current tape value is 0, remove itself from the list if it is the head
+				if(list != null) if(list[0] == program_char_index) list = list[1];
+				
+				// iterate until the matching closing bracket
+				var found_l_bracket = 0;
+				var found_matching = false;
+				while(found_matching == false){
+					program_char_index = program_char_index + 1;
+					var newchar = program[program_char_index];
+					if(newchar == "[") found_l_bracket = found_l_bracket + 1;
+					else if(newchar == "]" && found_l_bracket != 0) found_l_bracket = found_l_bracket - 1;
+					else if(newchar == "]" && found_l_bracket == 0) found_matching = true;
+				}
+			}else{
+				// if the current tape value is not 0, add itself to the list if it is not the head
+				// It is written like this because the interpreter does not support short circuiting
+				var create_new_node = false;
+				if(list == null) create_new_node = true;
+				else if(list[0] != program_char_index) create_new_node = true; // this is only evaluated if stack is not null
+				if(create_new_node) list = [program_char_index, list];
+			}
+		}
+
+		else print("Unexpected character found\n");
+
+		program_char_index = program_char_index + 1;
+	}
+}
+
