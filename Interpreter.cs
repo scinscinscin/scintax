@@ -1,5 +1,8 @@
 #define PRINT_NUMBERS_AS_ASCII
 class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
+	private readonly bool isREPL;
+	public Interpreter(bool isREPL){ this.isREPL = isREPL; }
+
 	private Env env = new Env();
 	public static bool IsEqual(object? a, object? b){
 		if(a == null && b == null) return true;
@@ -172,7 +175,8 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	}
 
 	public void visitExpressionStmt(ExpressionStmt stmt){
-		evaluate(stmt.expr);
+		SIMPValue val = evaluate(stmt.expr);
+		if(isREPL) Console.Write(val.GetString());
 	}
 
 	public void visitBlockStmt(BlockStmt stmt){

@@ -1,6 +1,29 @@
 ﻿class Program{
+	public static List<Token> generateTokens(string code){
+		Lexer lexer = new Lexer(code);
+		while(!lexer.Finished) lexer.parse();
+		return lexer.tokens;
+	}
+
+	public static void repl(){
+		Interpreter interpreter = new Interpreter(isREPL: true);
+		// handle Ctrl+C gracefully
+		Console.CancelKeyPress += delegate { Console.Write("\n"); Environment.Exit(0); };
+		Console.Write("scintax interpreter & mathematical processor");
+		
+		while(true){
+			Console.Write("\n>> ");
+			string? code = Console.ReadLine();
+			if(code != null && code.Length != 0){
+				List<Stmt> statements = new Parser(generateTokens(code)).parse();	
+				interpreter.interpret(statements);
+			}
+		}
+	}
+
 	public static void Main(string[] args){
-		if(args.Length == 0){	Console.WriteLine("USAGE: ./simp <filetoparse>.scintax"); return; }
+		if(args.Length == 0) repl();
+
 		for(int i = 0; i < args.Length; i++){
 			Lexer lexer = new Lexer(File.ReadAllText(args[i]));
 			while(lexer.Finished == false) lexer.parse();
@@ -12,7 +35,7 @@
 			List<Stmt> statements = parser.parse();
 			Console.WriteLine("Parser has finished parsing. Generated {0} statements", statements.Count);
 
-			Interpreter interpreter = new Interpreter();
+			Interpreter interpreter = new Interpreter(isREPL: false);
 			interpreter.interpret(statements);
 			//Console.WriteLine(interpreter.expression(headnode).GetRaw());
 			//Console.WriteLine("The interpreter has finished running");
