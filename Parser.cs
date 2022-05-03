@@ -27,10 +27,17 @@ class Parser{
 	}/*}}}*/
 
 	public Expr expression(){
-		return logical();
+		return nullish_coalescence();
 	}
 
 	// expression parsers{{{
+	public Expr nullish_coalescence(){
+		Expr expr = logical();
+		while(match(TokenType.QUESTION_QUESTION))
+			expr = new ShortCircuitExpr(expr, PreviousToken, logical());
+		return expr;
+	}
+
 	public Expr logical(){
 		Expr expr = equality();
 		while(match(TokenType.PIPE_PIPE, TokenType.AMPERSAND_AMPERSAND))

@@ -32,16 +32,20 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	}
 
 	public SIMPValue visitShortCircuitExpr(ShortCircuitExpr expr){
-		bool lhside = expression(expr.lefthand).GetBoolean();
+		SIMPValue lhside = expression(expr.lefthand);
+		bool lhbool= lhside.GetBoolean();
 		
 		if(expr.op.type == TokenType.PIPE_PIPE){
-			if(lhside) return new SIMPBool(true);
+			if(lhbool) return new SIMPBool(true);
 			// we only want to evaluate the right hand side if the left is false in the case of logical OR
 			return new SIMPBool(expression(expr.righthand).GetBoolean());
 		}else if(expr.op.type == TokenType.AMPERSAND_AMPERSAND){
-			if(!lhside) return new SIMPBool(false);
+			if(!lhbool) return new SIMPBool(false);
 			// only evaluate the right hand side if the left is true
 			return new SIMPBool(expression(expr.righthand).GetBoolean());
+		}else if(expr.op.type == TokenType.QUESTION_QUESTION){
+			if(lhside is SIMPNull) return expression(expr.righthand);
+			else return lhside;
 		}
 
 		else throw new Exception($"Invalid Short Circuit expression operator of {expr.op.type}");

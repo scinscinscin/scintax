@@ -149,6 +149,7 @@ class Lexer{
 			if(NextChar == '/') comment();
 			else tokenType = match('=') ? TokenType.SLASH_EQUALS : TokenType.SLASH;
 		}
+		else if(CurrentChar == '?') tokenType = match('?') ? TokenType.QUESTION_QUESTION : TokenType.QUESTION;
 
 		else if(CurrentChar == '"') stringLiteral();
 		else if(IsNumeric(CurrentChar)) numberLiteral();
