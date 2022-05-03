@@ -95,10 +95,20 @@ class Parser{
 
 	private Expr unary(){
 		if(match(TokenType.BANG, TokenType.MINUS)){
-			 return new UnaryExpr(PreviousToken, literal());
+			 return new UnaryExpr(PreviousToken, postfix());
 		}
 
-		return literal();
+		return postfix();
+	}
+
+	private Expr postfix(){
+		Expr expr = literal();
+		
+		if(match(TokenType.PLUS_PLUS, TokenType.MINUS_MINUS)){
+			return new PostfixExpr(expr, PreviousToken); 
+		}
+		
+		return expr;
 	}
 
 	private Expr literal(){

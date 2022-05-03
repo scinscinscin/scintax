@@ -142,6 +142,18 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 		return expression(cond ? expr.truthy_val : expr.falsey_val);
 	}
 
+	public SIMPValue visitPostfixExpr(PostfixExpr expr){
+		// calculate the current value of the expression
+		SIMPValue current_value = expression(expr.expr);
+		SIMPValue new_value;
+		if(expr.op.type == TokenType.PLUS_PLUS) new_value = new SIMPNumber(current_value.GetDouble() + 1);
+		else if(expr.op.type == TokenType.MINUS_MINUS) new_value = new SIMPNumber(current_value.GetDouble() - 1);
+		else throw new Exception($"Invalid Postfix expression operator of {expr.op.type}");
+
+		expression(new AssignmentExpr(expr.expr, new LiteralExpr(new_value.GetRaw())));
+		return current_value;
+	}
+
 	// statement interpreters below
 	public void visitVariableStmt(VariableStmt stmt){
 		SIMPValue val = stmt.val != null ? expression(stmt.val) : new SIMPNull();

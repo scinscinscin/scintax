@@ -7,6 +7,7 @@
 			"ShortCircuit : Expr lefthand, Token op, Expr righthand",
 			"Ternary : Expr condition, Expr truthy_val, Expr falsey_val",
 			"Unary : Token op, Expr expr",
+			"Postfix : Expr expr, Token op",
 			"Grouping : Expr contents",
 			"Variable : Token identifier",
 			"Assignment : Expr writelocation, Expr val",
