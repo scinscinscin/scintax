@@ -12,10 +12,7 @@ while(isFinished == false){
 	}else{
 		var current_char = program[program_char_index];
 		
-		if(current_char == "+") {
-			if(tape[tape_index] == null) tape[tape_index] = 1;
-			else tape[tape_index] = tape[tape_index] + 1;
-		}
+		if(current_char == "+") tape[tape_index] = tape[tape_index] == null ? 1 : tape[tape_index] + 1;
 		else if(current_char == "-") tape[tape_index] = tape[tape_index] - 1;
 		else if(current_char == ">") tape_index = tape_index + 1;
 		else if(current_char == "<") tape_index = tape_index - 1;

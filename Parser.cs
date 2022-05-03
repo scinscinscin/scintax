@@ -27,10 +27,23 @@ class Parser{
 	}/*}}}*/
 
 	public Expr expression(){
-		return nullish_coalescence();
+		return ternary_operator();
 	}
 
 	// expression parsers{{{
+	public Expr ternary_operator(){
+		Expr expr = nullish_coalescence();
+		
+		if(match(TokenType.QUESTION)){
+			Expr truthy_val = expression();
+			CheckAndConsume(TokenType.COLON, "Expected COLON after truthy value of ternary expression");
+			Expr falsey_val = expression();
+			return new TernaryExpr(expr, truthy_val, falsey_val);
+		}
+		
+		return expr;
+	}
+
 	public Expr nullish_coalescence(){
 		Expr expr = logical();
 		while(match(TokenType.QUESTION_QUESTION))

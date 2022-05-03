@@ -7,7 +7,7 @@ SIMP is a top down recursive descent parser.
 ### Roadmap
 
 - [ ] Functions
-- [ ] Ternary Operators
+- [x] Ternary Operators
 - [x] Nullish Coalescence
 - [ ] Postfix Operators
 - [ ] Immediate assign Operators

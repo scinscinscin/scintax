@@ -4,6 +4,7 @@ interface ExprVisitor<T>{
 	T visitLiteralExpr(LiteralExpr expr);
 	T visitBinaryExpr(BinaryExpr expr);
 	T visitShortCircuitExpr(ShortCircuitExpr expr);
+	T visitTernaryExpr(TernaryExpr expr);
 	T visitUnaryExpr(UnaryExpr expr);
 	T visitGroupingExpr(GroupingExpr expr);
 	T visitVariableExpr(VariableExpr expr);
@@ -51,6 +52,19 @@ class ShortCircuitExpr : Expr{
 		this.righthand = righthand;
 	}
 	public override T accept<T>(ExprVisitor<T> visitor){ return visitor.visitShortCircuitExpr(this); }
+}
+
+class TernaryExpr : Expr{
+	public readonly Expr condition;
+	public readonly Expr truthy_val;
+	public readonly Expr falsey_val;
+
+	public TernaryExpr(Expr condition, Expr truthy_val, Expr falsey_val){
+		this.condition = condition;
+		this.truthy_val = truthy_val;
+		this.falsey_val = falsey_val;
+	}
+	public override T accept<T>(ExprVisitor<T> visitor){ return visitor.visitTernaryExpr(this); }
 }
 
 class UnaryExpr : Expr{

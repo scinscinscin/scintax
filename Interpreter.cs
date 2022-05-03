@@ -137,6 +137,11 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 		return new SIMPArray(values);
 	}
 
+	public SIMPValue visitTernaryExpr(TernaryExpr expr){
+		bool cond = expression(expr.condition).GetBoolean();
+		return expression(cond ? expr.truthy_val : expr.falsey_val);
+	}
+
 	// statement interpreters below
 	public void visitVariableStmt(VariableStmt stmt){
 		SIMPValue val = stmt.val != null ? expression(stmt.val) : new SIMPNull();
