@@ -1,9 +1,11 @@
 class Parser{
+	private readonly bool isREPL;
+
 	public readonly List<Token> Tokens;
 	private int CurrentIdx = 0;
 	private Token CurrentToken { get => Tokens[CurrentIdx]; }
 	private Token PreviousToken { get => Tokens[CurrentIdx - 1]; }
-	public Parser(List<Token> tokens) { this.Tokens = tokens; }
+	public Parser(List<Token> tokens, bool isREPL) { this.Tokens = tokens; this.isREPL = isREPL; }
 	
 	// parsing infrastructure{{{
 	private bool match(params TokenType[] types){
@@ -23,6 +25,7 @@ class Parser{
 			return;
 		};
 
+		if(isREPL && type == TokenType.SEMICOLON) return;
 		throw new Exception($"Line: {CurrentToken.line}. {errmsg}. Received {CurrentToken.type}.");
 	}/*}}}*/
 

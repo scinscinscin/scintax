@@ -1,4 +1,6 @@
-﻿class Program{
+﻿using static Crayon.Output;
+
+class Program{
 	public static List<Token> generateTokens(string code){
 		Lexer lexer = new Lexer(code);
 		while(!lexer.Finished) lexer.parse();
@@ -9,13 +11,13 @@
 		Interpreter interpreter = new Interpreter(isREPL: true);
 		// handle Ctrl+C gracefully
 		Console.CancelKeyPress += delegate { Console.Write("\n"); Environment.Exit(0); };
-		Console.Write("scintax interpreter & mathematical processor");
+		Console.Write(Bold(Green("scintax interpreter & mathematical processor")));
 		
 		while(true){
 			Console.Write("\n>> ");
 			string? code = Console.ReadLine();
 			if(code != null && code.Length != 0){
-				List<Stmt> statements = new Parser(generateTokens(code)).parse();	
+				List<Stmt> statements = new Parser(generateTokens(code), isREPL: true).parse();	
 				interpreter.interpret(statements);
 			}
 		}
@@ -31,7 +33,7 @@
 			// Uncomment to list out all of the generated tokens
 			// foreach(var token in lexer.tokens) token.PrintToConsole();
 			
-			Parser parser = new Parser(lexer.tokens);
+			Parser parser = new Parser(lexer.tokens, isREPL: false);
 			List<Stmt> statements = parser.parse();
 			Console.WriteLine("Parser has finished parsing. Generated {0} statements", statements.Count);
 

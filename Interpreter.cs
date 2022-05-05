@@ -168,15 +168,15 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 
 #if PRINT_NUMBERS_AS_ASCII
 		if(val is SIMPNumber numval) Console.Write((char) numval.GetDouble());
-		else Console.Write(val.GetString());
+		else Console.Write(val.GetPrettyString());
 #else
-		Console.Write(val.GetString());
+		Console.Write(val.GetPrettyString());
 #endif
 	}
 
 	public void visitExpressionStmt(ExpressionStmt stmt){
 		SIMPValue val = evaluate(stmt.expr);
-		if(isREPL) Console.Write(val.GetString());
+		if(isREPL) Console.Write(val.GetPrettyString());
 	}
 
 	public void visitBlockStmt(BlockStmt stmt){

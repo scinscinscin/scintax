@@ -1,6 +1,9 @@
+using static Crayon.Output;
+
 abstract class SIMPValue {
 	public abstract double GetDouble();
 	public abstract string GetString();
+	public abstract string GetPrettyString();
 	public abstract bool GetBoolean();
 	public abstract object? GetRaw();
 }
@@ -8,6 +11,7 @@ abstract class SIMPValue {
 class SIMPNull : SIMPValue {
 	public override double GetDouble(){ return 0; }
 	public override string GetString(){ return "null"; }
+	public override string GetPrettyString(){ return Bold(White("null")); }
 	public override bool GetBoolean(){ return false; }
 	public override object? GetRaw(){ return null; }
 }
@@ -18,6 +22,7 @@ class SIMPString : SIMPValue, IndexAccessible, DotAccessible {
 	
 	public override double GetDouble(){ return Convert.ToDouble(val); }
 	public override string GetString(){ return val; }
+	public override string GetPrettyString(){ return Green($"{val}"); }
 	public override bool GetBoolean(){ return val == "" ? false : true; }
 	public override object? GetRaw(){ return val; }
 
@@ -48,6 +53,7 @@ class SIMPNumber : SIMPValue {
 
 	public override double GetDouble(){ return val; }
 	public override string GetString(){ return Convert.ToString(val); }
+	public override string GetPrettyString(){ return $"{Yellow(GetString())}"; }
 	public override bool GetBoolean(){ return val != 0; }
 	public override object? GetRaw(){ return val; }
 }
@@ -58,6 +64,7 @@ class SIMPBool : SIMPValue {
 	
 	public override double GetDouble(){ return val ? 1 : 0; }
 	public override string GetString(){ return val ? "true" : "false"; }
+	public override string GetPrettyString(){ return Bold(val ? Green("true") : Red("false")); }
 	public override bool GetBoolean(){ return val; }
 	public override object? GetRaw(){ return val; }
 }
@@ -68,6 +75,7 @@ class SIMPArray : SIMPValue, IndexAccessible {
 	
 	public override double GetDouble(){ return val.Count(); }
 	public override string GetString(){ return "[SIMPArray]"; }
+	public override string GetPrettyString(){ return Yellow("[SIMPArray]"); }
 	public override bool GetBoolean(){ return val.Count() != 0; }
 	public override object? GetRaw(){ return val;}
 

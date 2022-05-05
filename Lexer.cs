@@ -30,7 +30,7 @@ class Lexer{
 	private int CurrentIdx = 0;
 	private int StartingIdxOfCurrentLexeme = 0;
 	private string CurrentLexeme { get => FileContents.Substring(StartingIdxOfCurrentLexeme, CurrentIdx - StartingIdxOfCurrentLexeme + 1); }
-	private char CurrentChar { get => FileContents[CurrentIdx]; }
+	private char CurrentChar { get => CurrentIdx >= FileContents.Length ? '\0' : FileContents[CurrentIdx]; }
 	private char PreviousChar { get => FileContents[CurrentIdx - 1]; }
 	private char NextChar { get => FileContents[CurrentIdx + 1]; }
 	public bool Finished { get => FileContents.Length <= CurrentIdx; }
