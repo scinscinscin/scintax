@@ -6,6 +6,7 @@ interface ExprVisitor<T>{
 	T visitShortCircuitExpr(ShortCircuitExpr expr);
 	T visitTernaryExpr(TernaryExpr expr);
 	T visitUnaryExpr(UnaryExpr expr);
+	T visitPrefixExpr(PrefixExpr expr);
 	T visitPostfixExpr(PostfixExpr expr);
 	T visitGroupingExpr(GroupingExpr expr);
 	T visitVariableExpr(VariableExpr expr);
@@ -77,6 +78,17 @@ class UnaryExpr : Expr{
 		this.expr = expr;
 	}
 	public override T accept<T>(ExprVisitor<T> visitor){ return visitor.visitUnaryExpr(this); }
+}
+
+class PrefixExpr : Expr{
+	public readonly Token op;
+	public readonly Expr expr;
+
+	public PrefixExpr(Token op, Expr expr){
+		this.op = op;
+		this.expr = expr;
+	}
+	public override T accept<T>(ExprVisitor<T> visitor){ return visitor.visitPrefixExpr(this); }
 }
 
 class PostfixExpr : Expr{
