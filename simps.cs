@@ -112,25 +112,39 @@ class SIMPValueException : Exception {
 }
 
 class SIMPFunction : SIMPValue, Callable {
-	public readonly Env defined_env; // current environment whent he function was defined
+	public readonly Env defined_env; // current environment when the function was defined
 	public readonly List<Token> arguments;
-	public readonly Stmt body; // the thing to call
+	
+	// the things to call
+	public readonly Stmt? body = null;
+	public readonly Func<SIMPValue>? native_fn = null;
 
-	public SIMPFunction(Env defined_env, List<Token> arguments, Stmt body){
+	public SIMPFunction(
+			Env defined_env, List<Token> arguments, Stmt? body = null, 
+			Func<SIMPValue>? native_fn = null
+	){
 		this.defined_env = defined_env;
 		this.arguments = arguments;
 		this.body = body;
+		this.native_fn = native_fn;
+
+		if(body == null && native_fn == null)
+			throw new Exception("Attempted to instatiate a SIMPFunction with no callable property");
 	}
 
 	public SIMPValue call(Interpreter interpreter, List<Expr> parameters){
-		try{ body.accept(interpreter); }
+		try{ 
+			if(body != null) body.accept(interpreter);
+			else if(native_fn != null) return native_fn();
+			else throw new Exception("SIMPFunction has no callable property");
+		}
 		catch(SIMPValueException error){ return error.val; }
 
 		return new SIMPNull();
 	}
 
 	public override double GetDouble(){ return 0; }
-	public override string GetString(){ return "[Function]"; }
+	public override string GetString(){ return native_fn != null ? "<native fn>" : "[SIMPFunction]"; }
 	public override string GetPrettyString(){ return Yellow("[Function]"); }
 	public override bool GetBoolean(){ return true; }
 	public override object? GetRaw(){ return body; }

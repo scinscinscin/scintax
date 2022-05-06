@@ -4,6 +4,16 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 		this.isREPL = isREPL;
 		global_env = new Env();
 		env = global_env;
+	
+		// define native functions
+		global_env.define("epoch", new SIMPFunction(
+			defined_env: global_env,
+			arguments: new List<Token>(),
+			native_fn: () => {
+				long unix_seconds = DateTimeOffset.Now.ToUnixTimeSeconds();
+				return new SIMPNumber(unix_seconds);
+			}
+		));
 	}
 
 	private readonly Env global_env;
@@ -235,7 +245,7 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 
 	public void visitFunctionStmt(FunctionStmt stmt){
 		// create a new SIMPFunction then bind it to the current environment
-		SIMPFunction new_function = new SIMPFunction(env, stmt.arguments, stmt.body);
+		SIMPFunction new_function = new SIMPFunction(env, stmt.arguments, body: stmt.body);
 		env.define(stmt.identifier.lexeme, new_function);	
 	}
 
