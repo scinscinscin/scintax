@@ -211,10 +211,10 @@ class Parser{
 		CheckAndConsume(TokenType.L_PAREN, "Expected L_PAREN before function argument list");
 		
 		// Get all the argument names of the function
-		List<Token> arguments = new List<Token>();
+		List<string> arg_names = new List<string>();
 		while(CurrentToken.type != TokenType.R_PAREN){
 			CheckAndConsume(TokenType.IDENTIFIER, "Expected argument name.");
-			arguments.Add(PreviousToken);
+			arg_names.Add(PreviousToken.lexeme);
 			match(TokenType.COMMA);
 		}	
 
@@ -222,7 +222,7 @@ class Parser{
 		CheckAndConsume(TokenType.L_BRACE, "Expected L_BRACE in the beginning of function body");
 		Stmt block = block_statement();
 
-		return new FunctionStmt(functionName, arguments, block);
+		return new FunctionStmt(functionName, arg_names, block);
 	}
 
 	public Stmt statement(){

@@ -16,7 +16,7 @@ while(isFinished == false){
 		else if(current_char == "-") tape[tape_index]--;
 		else if(current_char == ">") tape_index++;
 		else if(current_char == "<") tape_index--;
-		else if(current_char == ".") print(tape[tape_index]);
+		else if(current_char == ".") print(int_to_char(tape[tape_index]));
 		
 		else if(current_char == "]"){
 			if(list == null) print("Invalid program state reached\n");

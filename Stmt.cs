@@ -37,12 +37,12 @@ class VariableStmt : Stmt{
 
 class FunctionStmt : Stmt{
 	public readonly Token identifier;
-	public readonly List<Token> arguments;
+	public readonly List<string> arg_names;
 	public readonly Stmt body;
 
-	public FunctionStmt(Token identifier, List<Token> arguments, Stmt body){
+	public FunctionStmt(Token identifier, List<string> arg_names, Stmt body){
 		this.identifier = identifier;
-		this.arguments = arguments;
+		this.arg_names = arg_names;
 		this.body = body;
 	}
 	public override void accept(StmtVisitor visitor){ visitor.visitFunctionStmt(this); }

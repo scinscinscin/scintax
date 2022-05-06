@@ -18,4 +18,4 @@ SIMP is a top down recursive descent parser.
 
 ### Example Programs
 
-simpbf - brainfuck interpreter written in scintax. Compile with ``#define PRINT_NUMBERS_AS_ASCII`` 
+simpbf - brainfuck interpreter written in scintax.

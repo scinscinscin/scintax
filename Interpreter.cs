@@ -8,10 +8,19 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 		// define native functions
 		global_env.define("epoch", new SIMPFunction(
 			defined_env: global_env,
-			arguments: new List<Token>(),
-			native_fn: () => {
+			native_fn: (List<SIMPValue> parameters) => {
 				long unix_seconds = DateTimeOffset.Now.ToUnixTimeSeconds();
 				return new SIMPNumber(unix_seconds);
+			}
+		));
+
+		global_env.define("int_to_char", new SIMPFunction(
+			defined_env: global_env,
+			arity: 1,
+			native_fn: (List<SIMPValue> parameters) => {
+				int to_be_converted = (int) parameters[0].GetDouble();
+				char char_convert = (char) to_be_converted;
+				return new SIMPString(char_convert.ToString());
 			}
 		));
 	}
@@ -154,12 +163,15 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 			Env currentEnv = env;
 
 			env = new Env(CallableFunction.defined_env);
-			if(CallableFunction.arguments.Count != parameters.Count)
-				throw new Exception($"Function expected {CallableFunction.arguments.Count} arguments, received {parameters.Count}");
-			for(int i = 0; i < CallableFunction.arguments.Count; i++)
-				env.define(CallableFunction.arguments[i].lexeme, parameters[i]);
+			if(CallableFunction.arity != parameters.Count)
+				throw new Exception($"Function expected {CallableFunction.arity} arguments, received {parameters.Count}");
 			
-			SIMPValue result = CallableFunction.call(this, expr.parameters);
+			// Define the arguments in the newly created environment
+			if(CallableFunction.arg_names != null)
+				for(int i = 0; i < CallableFunction.arity; i++)
+					env.define(CallableFunction.arg_names[i], parameters[i]);
+			
+			SIMPValue result = CallableFunction.call(this, parameters);
 			
 			env = currentEnv;
 			return result;
@@ -212,13 +224,7 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 
 	public void visitPrintStmt(PrintStmt stmt){
 		SIMPValue val = expression(stmt.expr);
-
-#if PRINT_NUMBERS_AS_ASCII
-		if(val is SIMPNumber numval) Console.Write((char) numval.GetDouble());
-		else Console.Write(val.GetPrettyString());
-#else
-		Console.Write(val.GetPrettyString());
-#endif
+		Console.Write(isREPL ? val.GetPrettyString() : val.GetString());
 	}
 
 	public void visitExpressionStmt(ExpressionStmt stmt){
@@ -245,7 +251,7 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 
 	public void visitFunctionStmt(FunctionStmt stmt){
 		// create a new SIMPFunction then bind it to the current environment
-		SIMPFunction new_function = new SIMPFunction(env, stmt.arguments, body: stmt.body);
+		SIMPFunction new_function = new SIMPFunction(env, stmt.arg_names, body: stmt.body);
 		env.define(stmt.identifier.lexeme, new_function);	
 	}
 

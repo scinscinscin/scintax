@@ -113,29 +113,31 @@ class SIMPValueException : Exception {
 
 class SIMPFunction : SIMPValue, Callable {
 	public readonly Env defined_env; // current environment when the function was defined
-	public readonly List<Token> arguments;
+	public readonly List<string>? arg_names = null;
+	public readonly int arity; // the number of parameters that it takes
 	
 	// the things to call
 	public readonly Stmt? body = null;
-	public readonly Func<SIMPValue>? native_fn = null;
+	public readonly Func<List<SIMPValue>, SIMPValue>? native_fn = null;
 
 	public SIMPFunction(
-			Env defined_env, List<Token> arguments, Stmt? body = null, 
-			Func<SIMPValue>? native_fn = null
+			Env defined_env, List<string>? arg_names = null, int arity = 0,
+			Stmt? body = null, Func<List<SIMPValue>, SIMPValue>? native_fn = null
 	){
 		this.defined_env = defined_env;
-		this.arguments = arguments;
+		this.arg_names = arg_names;
 		this.body = body;
 		this.native_fn = native_fn;
+		this.arity = arg_names != null ? arg_names.Count : arity;
 
 		if(body == null && native_fn == null)
 			throw new Exception("Attempted to instatiate a SIMPFunction with no callable property");
 	}
 
-	public SIMPValue call(Interpreter interpreter, List<Expr> parameters){
+	public SIMPValue call(Interpreter interpreter, List<SIMPValue> parameters){
 		try{ 
 			if(body != null) body.accept(interpreter);
-			else if(native_fn != null) return native_fn();
+			else if(native_fn != null) return native_fn(parameters);
 			else throw new Exception("SIMPFunction has no callable property");
 		}
 		catch(SIMPValueException error){ return error.val; }
@@ -166,5 +168,5 @@ interface DotAccessible{
 }
 
 interface Callable{
-	public SIMPValue call(Interpreter interpreter, List<Expr> parameters);
+	public SIMPValue call(Interpreter interpreter, List<SIMPValue> parameters);
 }
