@@ -157,6 +157,16 @@ class Parser{
 				Expr index = expression();
 				CheckAndConsume(TokenType.R_SQ_BRACE, "Expected R_SQ_BRACE token after index access expression");	
 				expr = new IndexAccessExpr(expr, index);
+			}else if(match(TokenType.L_PAREN)){
+				// get all parameters
+				List<Expr> parameters = new List<Expr>();
+				while(CurrentToken.type != TokenType.R_PAREN){
+					Expr parameter_expression = expression();
+					parameters.Add(parameter_expression);
+					match(TokenType.COMMA);
+				}
+				CheckAndConsume(TokenType.R_PAREN, "Expected R_PAREN token after parameter list");
+				expr = new FunctionCallExpr(expr, parameters);
 			}else{
 				break;
 			}			
@@ -181,6 +191,7 @@ class Parser{
 	// statement parsers{{{
 	public Stmt declaration(){
 		if(match(TokenType.VAR)) return variable_declaration();
+		else if(match(TokenType.FUNCTION)) return function_declaration();
 		return statement();
 	}
 	
@@ -193,11 +204,33 @@ class Parser{
 		return new VariableStmt(tok, initializer);	
 	}
 
+	public Stmt function_declaration(){
+		CheckAndConsume(TokenType.IDENTIFIER, "Expected function name");
+		Token functionName = PreviousToken;
+		
+		CheckAndConsume(TokenType.L_PAREN, "Expected L_PAREN before function argument list");
+		
+		// Get all the argument names of the function
+		List<Token> arguments = new List<Token>();
+		while(CurrentToken.type != TokenType.R_PAREN){
+			CheckAndConsume(TokenType.IDENTIFIER, "Expected argument name.");
+			arguments.Add(PreviousToken);
+			match(TokenType.COMMA);
+		}	
+
+		CheckAndConsume(TokenType.R_PAREN, "Expected R_PAREN after function argument list");
+		CheckAndConsume(TokenType.L_BRACE, "Expected L_BRACE in the beginning of function body");
+		Stmt block = block_statement();
+
+		return new FunctionStmt(functionName, arguments, block);
+	}
+
 	public Stmt statement(){
 		if(match(TokenType.PRINT)) return print_statement();
 		else if(match(TokenType.L_BRACE)) return block_statement(); 
 		else if(match(TokenType.IF)) return if_statement();
 		else if(match(TokenType.WHILE)) return while_statement();
+		else if(match(TokenType.RETURN)) return return_statement();
 		
 		return expression_statement();
 	}
@@ -247,7 +280,15 @@ class Parser{
 		Expr expr = expression();	
 		CheckAndConsume(TokenType.SEMICOLON, "Expected ; after expression");
 		return new ExpressionStmt(expr);
-	}/*}}}*/
+	}
+
+	public Stmt return_statement(){
+		if(match(TokenType.SEMICOLON)) return new ReturnStmt(null);
+		Expr return_expr = expression();
+		CheckAndConsume(TokenType.SEMICOLON, "Expected ; after return expression");
+		return new ReturnStmt(return_expr);
+	}
+	/*}}}*/
 	
 	/* Parses a scintax program and returns a list of its statements*/ 
 	public List<Stmt> parse(){

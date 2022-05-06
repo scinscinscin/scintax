@@ -21,6 +21,7 @@ class Lexer{
 		dict.Add("true", TokenType.TRUE);
 		dict.Add("false", TokenType.FALSE);
 		dict.Add("null", TokenType.NULL);
+		dict.Add("return", TokenType.RETURN);
 	}
 	
 	public readonly string FileContents;	// input string

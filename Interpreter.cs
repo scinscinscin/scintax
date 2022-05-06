@@ -1,9 +1,14 @@
-#define PRINT_NUMBERS_AS_ASCII
 class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	private readonly bool isREPL;
-	public Interpreter(bool isREPL){ this.isREPL = isREPL; }
+	public Interpreter(bool isREPL){ 
+		this.isREPL = isREPL;
+		global_env = new Env();
+		env = global_env;
+	}
 
-	private Env env = new Env();
+	private readonly Env global_env;
+	private Env env;
+
 	public static bool IsEqual(object? a, object? b){
 		if(a == null && b == null) return true;
 		else if (a == null || b == null) return false; // one but not both of them is null, so they are inequal
@@ -130,8 +135,27 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	}
 	
 	public SIMPValue visitFunctionCallExpr(FunctionCallExpr expr){
-		Console.WriteLine("Attempted to use unfinished logic == Function call expression");
-		return new SIMPNull();
+		// get the SIMPObject to be called then evaluate all the parameters
+		SIMPValue function = expression(expr.function);
+		List<SIMPValue> parameters = new List<SIMPValue>();
+		foreach(var param in expr.parameters) parameters.Add(evaluate(param));
+
+		if(function is SIMPFunction CallableFunction){
+			Env currentEnv = env;
+
+			env = new Env(CallableFunction.defined_env);
+			if(CallableFunction.arguments.Count != parameters.Count)
+				throw new Exception($"Function expected {CallableFunction.arguments.Count} arguments, received {parameters.Count}");
+			for(int i = 0; i < CallableFunction.arguments.Count; i++)
+				env.define(CallableFunction.arguments[i].lexeme, parameters[i]);
+			
+			SIMPValue result = CallableFunction.call(this, expr.parameters);
+			
+			env = currentEnv;
+			return result;
+		}
+
+		throw new Exception("Attempted to call an uncallable value");
 	}
 
 	public SIMPValue visitArrayCreationExpr(ArrayCreationExpr expr){
@@ -207,6 +231,17 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 
 	public void visitWhileStmt(WhileStmt stmt){
 		while(evaluate(stmt.condition).GetBoolean() == true) execute(stmt.stmt);	
+	}
+
+	public void visitFunctionStmt(FunctionStmt stmt){
+		// create a new SIMPFunction then bind it to the current environment
+		SIMPFunction new_function = new SIMPFunction(env, stmt.arguments, stmt.body);
+		env.define(stmt.identifier.lexeme, new_function);	
+	}
+
+	public void visitReturnStmt(ReturnStmt stmt){
+		SIMPValue val = stmt.return_val == null ? new SIMPNull() : evaluate(stmt.return_val);
+		throw new SIMPValueException(val);
 	}
 
 	public SIMPValue evaluate(Expr expr){ return expr.accept(this); }

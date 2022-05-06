@@ -106,6 +106,36 @@ class SIMPArray : SIMPValue, IndexAccessible {
 	}
 }
 
+class SIMPValueException : Exception {
+	public readonly SIMPValue val;
+	public SIMPValueException(SIMPValue val) { this.val = val; }
+}
+
+class SIMPFunction : SIMPValue, Callable {
+	public readonly Env defined_env; // current environment whent he function was defined
+	public readonly List<Token> arguments;
+	public readonly Stmt body; // the thing to call
+
+	public SIMPFunction(Env defined_env, List<Token> arguments, Stmt body){
+		this.defined_env = defined_env;
+		this.arguments = arguments;
+		this.body = body;
+	}
+
+	public SIMPValue call(Interpreter interpreter, List<Expr> parameters){
+		try{ body.accept(interpreter); }
+		catch(SIMPValueException error){ return error.val; }
+
+		return new SIMPNull();
+	}
+
+	public override double GetDouble(){ return 0; }
+	public override string GetString(){ return "[Function]"; }
+	public override string GetPrettyString(){ return Yellow("[Function]"); }
+	public override bool GetBoolean(){ return true; }
+	public override object? GetRaw(){ return body; }
+}
+
 interface IndexAccessible{
 	public SIMPValue IndexAccess(SIMPValue idx);
 	public void IndexWrite(SIMPValue idx, SIMPValue val){
@@ -119,4 +149,8 @@ interface DotAccessible{
 	public void DotWrite(string identifier, SIMPValue val){
 		throw new Exception("Attempted to write to a readonly dot-accessible SIMP");
 	}
+}
+
+interface Callable{
+	public SIMPValue call(Interpreter interpreter, List<Expr> parameters);
 }

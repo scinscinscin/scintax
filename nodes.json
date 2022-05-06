@@ -23,6 +23,8 @@
 		"subclasses": [
 			"Print : Expr expr", 
 			"Variable : Token identifier, Expr? val",
+			"Function : Token identifier, List<Token> arguments, Stmt body",
+			"Return : Expr? return_val",
 			"Expression : Expr expr",
 			"Block : List<Stmt> statements",
 			"If : Expr condition, Stmt true_stmt, Stmt? false_stmt",

@@ -3,6 +3,8 @@ using System;
 interface StmtVisitor{
 	void visitPrintStmt(PrintStmt stmt);
 	void visitVariableStmt(VariableStmt stmt);
+	void visitFunctionStmt(FunctionStmt stmt);
+	void visitReturnStmt(ReturnStmt stmt);
 	void visitExpressionStmt(ExpressionStmt stmt);
 	void visitBlockStmt(BlockStmt stmt);
 	void visitIfStmt(IfStmt stmt);
@@ -31,6 +33,28 @@ class VariableStmt : Stmt{
 		this.val = val;
 	}
 	public override void accept(StmtVisitor visitor){ visitor.visitVariableStmt(this); }
+}
+
+class FunctionStmt : Stmt{
+	public readonly Token identifier;
+	public readonly List<Token> arguments;
+	public readonly Stmt body;
+
+	public FunctionStmt(Token identifier, List<Token> arguments, Stmt body){
+		this.identifier = identifier;
+		this.arguments = arguments;
+		this.body = body;
+	}
+	public override void accept(StmtVisitor visitor){ visitor.visitFunctionStmt(this); }
+}
+
+class ReturnStmt : Stmt{
+	public readonly Expr? return_val;
+
+	public ReturnStmt(Expr? return_val){
+		this.return_val = return_val;
+	}
+	public override void accept(StmtVisitor visitor){ visitor.visitReturnStmt(this); }
 }
 
 class ExpressionStmt : Stmt{
