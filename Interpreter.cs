@@ -23,6 +23,17 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 				return new SIMPString(char_convert.ToString());
 			}
 		));
+		
+		global_env.define("readline", new SIMPFunction(
+			defined_env: global_env,
+			arity: 1,
+			native_fn: (List<SIMPValue> parameters) => {
+				string to_be_printed = parameters[0].GetString();
+				Console.Write(to_be_printed);
+				string val = Console.ReadLine() ?? "";
+				return new SIMPString(val);
+			}
+		));
 	}
 
 	private readonly Env global_env;
