@@ -17,7 +17,6 @@ class Lexer{
 		dict.Add("implements", TokenType.IMPLEMENTS);
 		dict.Add("var", TokenType.VAR);
 		dict.Add("const", TokenType.CONST);
-		dict.Add("print", TokenType.PRINT);
 		dict.Add("true", TokenType.TRUE);
 		dict.Add("false", TokenType.FALSE);
 		dict.Add("null", TokenType.NULL);

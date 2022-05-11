@@ -21,7 +21,6 @@
 	"Stmt": {
 		"is_generic": false,
 		"subclasses": [
-			"Print : Expr expr", 
 			"Variable : Token identifier, Expr? val",
 			"Function : Token identifier, List<string> arg_names, Stmt body",
 			"Return : Expr? return_val",

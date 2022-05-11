@@ -34,6 +34,16 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 				return new SIMPString(val);
 			}
 		));
+
+		global_env.define("print", new SIMPFunction(
+			defined_env: global_env,
+			arity: 1,
+			native_fn: (List<SIMPValue> parameters) => {
+				string to_be_printed = parameters[0].GetString();
+				Console.Write(to_be_printed);
+				return new SIMPNull();
+			}
+		));
 	}
 
 	private readonly Env global_env;
@@ -231,11 +241,6 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	public void visitVariableStmt(VariableStmt stmt){
 		SIMPValue val = stmt.val != null ? expression(stmt.val) : new SIMPNull();
 		env.define(stmt.identifier.lexeme, val);
-	}
-
-	public void visitPrintStmt(PrintStmt stmt){
-		SIMPValue val = expression(stmt.expr);
-		Console.Write(isREPL ? val.GetPrettyString() : val.GetString());
 	}
 
 	public void visitExpressionStmt(ExpressionStmt stmt){

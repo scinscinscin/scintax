@@ -1,7 +1,6 @@
 using System;
 
 interface StmtVisitor{
-	void visitPrintStmt(PrintStmt stmt);
 	void visitVariableStmt(VariableStmt stmt);
 	void visitFunctionStmt(FunctionStmt stmt);
 	void visitReturnStmt(ReturnStmt stmt);
@@ -13,15 +12,6 @@ interface StmtVisitor{
 
 abstract class Stmt{
 	public abstract void accept(StmtVisitor visitor);
-}
-
-class PrintStmt : Stmt{
-	public readonly Expr expr;
-
-	public PrintStmt(Expr expr){
-		this.expr = expr;
-	}
-	public override void accept(StmtVisitor visitor){ visitor.visitPrintStmt(this); }
 }
 
 class VariableStmt : Stmt{

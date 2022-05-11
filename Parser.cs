@@ -226,21 +226,12 @@ class Parser{
 	}
 
 	public Stmt statement(){
-		if(match(TokenType.PRINT)) return print_statement();
-		else if(match(TokenType.L_BRACE)) return block_statement(); 
+		if(match(TokenType.L_BRACE)) return block_statement(); 
 		else if(match(TokenType.IF)) return if_statement();
 		else if(match(TokenType.WHILE)) return while_statement();
 		else if(match(TokenType.RETURN)) return return_statement();
 		
 		return expression_statement();
-	}
-
-	public Stmt print_statement(){
-		CheckAndConsume(TokenType.L_PAREN, "Expected L_PAREN after PRINT token");
-		Expr expr = expression();
-		CheckAndConsume(TokenType.R_PAREN, "Expected R_PAREN after expression");
-		CheckAndConsume(TokenType.SEMICOLON, "Expected SEMICOLON after print statement");
-		return new PrintStmt(expr);
 	}
 
 	public Stmt block_statement(){
