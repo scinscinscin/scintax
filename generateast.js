@@ -5,7 +5,7 @@ const files = Object.keys(tree);
 for(const file of files){
 	const subclasses = tree[file]["subclasses"].map((str) => {
 		const spl = str.split(" : ");
-		return { name: spl[0], fields: spl[1].split(", ") };
+		return { name: spl[0], fields: spl[1].split(" | ") };
 	});
 	
 	//console.log("Here are the subclasses", subclasses);
@@ -33,7 +33,7 @@ for(const file of files){
 		// generate the constructor of the subclass
 		output += `\n	public ${subcl.name}${file}(${subcl.fields.join(", ")}){\n`;
 		for(const field of subcl.fields){
-			const fieldname = field.split(" ")[1];
+			const fieldname = field.split(" ").pop();
 			output += `		this.${fieldname} = ${fieldname};\n`;
 		};
 		output += `	}\n`

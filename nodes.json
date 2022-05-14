@@ -3,31 +3,32 @@
 		"is_generic": true,
 		"subclasses": [
 			"Literal : object? val",
-			"Binary : Expr lefthand, Token op, Expr righthand",
-			"ShortCircuit : Expr lefthand, Token op, Expr righthand",
-			"Ternary : Expr condition, Expr truthy_val, Expr falsey_val",
-			"Unary : Token op, Expr expr",
-			"Prefix : Token op, Expr expr",
-			"Postfix : Expr expr, Token op",
+			"Binary : Expr lefthand | Token op | Expr righthand",
+			"ShortCircuit : Expr lefthand | Token op | Expr righthand",
+			"Ternary : Expr condition | Expr truthy_val | Expr falsey_val",
+			"Unary : Token op | Expr expr",
+			"Prefix : Token op | Expr expr",
+			"Postfix : Expr expr | Token op",
 			"Grouping : Expr contents",
 			"Variable : Token identifier",
-			"Assignment : Expr writelocation, Expr val",
-			"IndexAccess : Expr contents, Expr index",
-			"DotAccess : Expr contents, Token ident",
-			"FunctionCall : Expr function, List<Expr> parameters",
+			"Assignment : Expr writelocation | Expr val",
+			"IndexAccess : Expr contents | Expr index",
+			"DotAccess : Expr contents | Token ident",
+			"FunctionCall : Expr function | List<Expr> parameters",
 			"ArrayCreation : List<Expr> expressions"
 		]
 	}, 
 	"Stmt": {
 		"is_generic": false,
 		"subclasses": [
-			"Variable : Token identifier, Expr? val",
-			"Function : Token identifier, List<string> arg_names, Stmt body",
+			"Variable : Token identifier | Expr? val",
+			"Function : Token identifier | List<string> arg_names | Stmt body",
+			"Class : Token identifier | Dictionary<string, Expr> default_values | Dictionary<string, FunctionStmt> methods | FunctionStmt? ctor | Token? inherited_name",
 			"Return : Expr? return_val",
 			"Expression : Expr expr",
 			"Block : List<Stmt> statements",
-			"If : Expr condition, Stmt true_stmt, Stmt? false_stmt",
-			"While : Expr condition, Stmt stmt"
+			"If : Expr condition | Stmt true_stmt | Stmt? false_stmt",
+			"While : Expr condition | Stmt stmt"
 		]
 	}
 }

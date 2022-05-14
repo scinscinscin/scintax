@@ -47,7 +47,7 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	}
 
 	private readonly Env global_env;
-	private Env env;
+	public Env env;
 
 	public static bool IsEqual(object? a, object? b){
 		if(a == null && b == null) return true;
@@ -180,24 +180,9 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 		List<SIMPValue> parameters = new List<SIMPValue>();
 		foreach(var param in expr.parameters) parameters.Add(evaluate(param));
 
-		if(function is SIMPFunction CallableFunction){
-			Env currentEnv = env;
-
-			env = new Env(CallableFunction.defined_env);
-			if(CallableFunction.arity != parameters.Count)
-				throw new Exception($"Function expected {CallableFunction.arity} arguments, received {parameters.Count}");
-			
-			// Define the arguments in the newly created environment
-			if(CallableFunction.arg_names != null)
-				for(int i = 0; i < CallableFunction.arity; i++)
-					env.define(CallableFunction.arg_names[i], parameters[i]);
-			
-			SIMPValue result = CallableFunction.call(this, parameters);
-			
-			env = currentEnv;
-			return result;
-		}
-
+		if(function is Callable CallableFunction)
+			return CallableFunction.Call(this, parameters);	
+		
 		throw new Exception("Attempted to call an uncallable value");
 	}
 
@@ -269,6 +254,10 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 		// create a new SIMPFunction then bind it to the current environment
 		SIMPFunction new_function = new SIMPFunction(env, stmt.arg_names, body: stmt.body);
 		env.define(stmt.identifier.lexeme, new_function);	
+	}
+
+	public void visitClassStmt(ClassStmt stmt){
+		env.define(stmt.identifier.lexeme, new SIMPClassConstructor(stmt));
 	}
 
 	public void visitReturnStmt(ReturnStmt stmt){

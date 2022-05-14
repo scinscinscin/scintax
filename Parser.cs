@@ -5,6 +5,7 @@ class Parser{
 	private int CurrentIdx = 0;
 	private Token CurrentToken { get => Tokens[CurrentIdx]; }
 	private Token PreviousToken { get => Tokens[CurrentIdx - 1]; }
+	private Token NextToken { get => Tokens[CurrentIdx + 1]; }
 	public Parser(List<Token> tokens, bool isREPL) { this.Tokens = tokens; this.isREPL = isREPL; }
 	
 	// parsing infrastructure{{{
@@ -192,15 +193,17 @@ class Parser{
 	public Stmt declaration(){
 		if(match(TokenType.VAR)) return variable_declaration();
 		else if(match(TokenType.FUNCTION)) return function_declaration();
+		else if(match(TokenType.CLASS)) return class_declaration();
 		return statement();
 	}
-	
+
 	public Stmt variable_declaration(){
 		CheckAndConsume(TokenType.IDENTIFIER, "Expected variable name");
 		Token tok = PreviousToken;
 
 		Expr? initializer = match(TokenType.EQUAL) ? expression() : null;
 		CheckAndConsume(TokenType.SEMICOLON, "Expected SEMICOLON after variable declaration");
+		
 		return new VariableStmt(tok, initializer);	
 	}
 
@@ -223,6 +226,42 @@ class Parser{
 		Stmt block = block_statement();
 
 		return new FunctionStmt(functionName, arg_names, block);
+	}
+	
+	public Stmt class_declaration(){
+		CheckAndConsume(TokenType.IDENTIFIER, "Expected class name");
+		Token class_name = PreviousToken;
+		Token? inherited_name = null;
+		Dictionary<string, Expr> default_values = new Dictionary<string, Expr>();
+		Dictionary<string, FunctionStmt> methods = new Dictionary<string, FunctionStmt>();
+		FunctionStmt? ctor_method = null;
+
+		// handle inheritance here
+		if(match(TokenType.COLON)){
+			CheckAndConsume(TokenType.IDENTIFIER, "Expected class name");
+			inherited_name = PreviousToken;
+		}
+
+		CheckAndConsume(TokenType.L_BRACE, "Expected L_BRACE in the beginning of class body"); 
+		while(!match(TokenType.R_BRACE)){
+			if(NextToken.type == TokenType.EQUAL){
+				VariableStmt variable_stmt = (VariableStmt) variable_declaration();
+				if(variable_stmt.val == null)
+					throw new Exception("Expected default value for class member declaration");
+				default_values[variable_stmt.identifier.lexeme] = variable_stmt.val;
+			}else if(NextToken.type == TokenType.L_PAREN){
+				FunctionStmt new_function = (FunctionStmt) function_declaration();
+				if(new_function.identifier.lexeme == class_name.lexeme)
+					ctor_method = new_function;
+				else
+					methods[new_function.identifier.lexeme] = new_function;
+			}
+
+			else
+				throw new Exception($"Expected either variable or method declaration inside class. Received {CurrentToken.type}.");
+		}
+
+		return new ClassStmt(class_name, default_values, methods, ctor_method, inherited_name);
 	}
 
 	public Stmt statement(){

@@ -7,10 +7,12 @@ class Env {
 		dict.Add(key, val);
 	}
 
-	public SIMPValue get(Token name){
-		if(dict.ContainsKey(name.lexeme)) return dict[name.lexeme];
+	public SIMPValue get(Token name){ return get(name.lexeme); }
+
+	public SIMPValue get(string name){
+		if(dict.ContainsKey(name)) return dict[name];
 		if(enclosing != null) return enclosing.get(name);
-		throw new Exception($"Tried to fetch undefined variable {name.lexeme}");
+		throw new Exception($"Tried to fetch undefined variable {name}");
 	}
 
 	public void assign(Token name, SIMPValue val){

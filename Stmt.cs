@@ -3,6 +3,7 @@ using System;
 interface StmtVisitor{
 	void visitVariableStmt(VariableStmt stmt);
 	void visitFunctionStmt(FunctionStmt stmt);
+	void visitClassStmt(ClassStmt stmt);
 	void visitReturnStmt(ReturnStmt stmt);
 	void visitExpressionStmt(ExpressionStmt stmt);
 	void visitBlockStmt(BlockStmt stmt);
@@ -36,6 +37,23 @@ class FunctionStmt : Stmt{
 		this.body = body;
 	}
 	public override void accept(StmtVisitor visitor){ visitor.visitFunctionStmt(this); }
+}
+
+class ClassStmt : Stmt{
+	public readonly Token identifier;
+	public readonly Dictionary<string, Expr> default_values;
+	public readonly Dictionary<string, FunctionStmt> methods;
+	public readonly FunctionStmt? ctor;
+	public readonly Token? inherited_name;
+
+	public ClassStmt(Token identifier, Dictionary<string, Expr> default_values, Dictionary<string, FunctionStmt> methods, FunctionStmt? ctor, Token? inherited_name){
+		this.identifier = identifier;
+		this.default_values = default_values;
+		this.methods = methods;
+		this.ctor = ctor;
+		this.inherited_name = inherited_name;
+	}
+	public override void accept(StmtVisitor visitor){ visitor.visitClassStmt(this); }
 }
 
 class ReturnStmt : Stmt{
