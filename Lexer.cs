@@ -41,6 +41,11 @@ class Lexer{
 	private static bool IsNumeric(char a) { return a >= '0' && a <= '9'; }
 	private static bool IsAlphanumeric(char a) { return IsAlphabetical(a) || IsNumeric(a); }
 	
+	public Token CreateNewToken(TokenType type, object? val, bool isEOF = false){
+		string lexeme = isEOF ? "\0" : CurrentLexeme;
+		return new Token(type, lexeme, CurrentLine, val, StartingIdxOfCurrentLexeme, CurrentIdx);
+	}
+
 	// returns true if next char matches some char, before consuming it 
 	private bool match(char c){
 		if(NextChar == c){
@@ -52,6 +57,8 @@ class Lexer{
 
 	private void comment(){
 		while(CurrentChar != '\n') CurrentIdx++;
+		Token token = CreateNewToken(TokenType.COMMENT, null);
+		tokens.Add(token);
 		CurrentLine++;
 	}
 
@@ -65,7 +72,7 @@ class Lexer{
 		}
 		
 		val = val.Replace("\\n", "\n"); // handle new lines
-		Token token = new Token(TokenType.STRING_LITERAL, CurrentLexeme, CurrentLine, val);
+		Token token = CreateNewToken(TokenType.STRING_LITERAL, val);
 		tokens.Add(token);
 	}
 
@@ -80,7 +87,7 @@ class Lexer{
 		CurrentIdx--;
 
 		TokenType type = dict.ContainsKey(iden) ? dict[iden] : TokenType.IDENTIFIER;
-		Token token = new Token(type, CurrentLexeme, CurrentLine, null);
+		Token token = CreateNewToken(type, null);
 		tokens.Add(token);
 	}
 
@@ -108,7 +115,7 @@ class Lexer{
 		double number;	
 
 		if(Double.TryParse(numstr, out number)){
-			Token token = new Token(TokenType.NUMBER_LITERAL, CurrentLexeme, CurrentLine, number);
+			Token token = CreateNewToken(TokenType.NUMBER_LITERAL, number);
 			tokens.Add(token);
 		}else{
 			error($"Failed to convert a number literal ({numstr}) to double");
@@ -158,7 +165,7 @@ class Lexer{
 
 		if(tokenType != TokenType.NONE){
 			// create new token and append it the list;
-			Token token = new Token(tokenType, FileContents.Substring(StartingIdxOfCurrentLexeme, CurrentIdx-StartingIdxOfCurrentLexeme+1), CurrentLine, null);
+			Token token = CreateNewToken(tokenType, null);
 			tokens.Add(token);
 		}
 		
@@ -166,7 +173,7 @@ class Lexer{
 		
 		if(CurrentIdx == FileContents.Length) {
 			// reached the end of the file
-			Token EOFToken = new Token(TokenType.EOF, "\0", CurrentLine, null);
+			Token EOFToken = CreateNewToken(TokenType.EOF, null, isEOF: true);
 			tokens.Add(EOFToken);
 		}
 	}

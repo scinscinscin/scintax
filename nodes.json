@@ -22,8 +22,8 @@
 		"is_generic": false,
 		"subclasses": [
 			"Variable : Token identifier | Expr? val",
-			"Function : Token identifier | List<string> arg_names | Stmt body",
-			"Class : Token identifier | Dictionary<string, Expr> default_values | Dictionary<string, FunctionStmt> methods | FunctionStmt? ctor | Token? inherited_name",
+			"Function : Token identifier | List<Token> arg_names | Stmt body | bool isMethod",
+			"Class : Token identifier | Dictionary<Token, Expr> default_values | Dictionary<Token, FunctionStmt> methods | FunctionStmt? ctor | Token? inherited_name",
 			"Return : Expr? return_val",
 			"Expression : Expr expr",
 			"Block : List<Stmt> statements",

@@ -15,6 +15,8 @@ SIMP is a top down recursive descent parser.
 - [x] REPL
 - [ ] REPL History
 - [x] Classes
+- [x] Semantic Highlighting
+- [ ] Lexer and Parser exception handling
 
 ### Example Programs
 

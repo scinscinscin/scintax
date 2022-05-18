@@ -28,25 +28,27 @@ class VariableStmt : Stmt{
 
 class FunctionStmt : Stmt{
 	public readonly Token identifier;
-	public readonly List<string> arg_names;
+	public readonly List<Token> arg_names;
 	public readonly Stmt body;
+	public readonly bool isMethod;
 
-	public FunctionStmt(Token identifier, List<string> arg_names, Stmt body){
+	public FunctionStmt(Token identifier, List<Token> arg_names, Stmt body, bool isMethod){
 		this.identifier = identifier;
 		this.arg_names = arg_names;
 		this.body = body;
+		this.isMethod = isMethod;
 	}
 	public override void accept(StmtVisitor visitor){ visitor.visitFunctionStmt(this); }
 }
 
 class ClassStmt : Stmt{
 	public readonly Token identifier;
-	public readonly Dictionary<string, Expr> default_values;
-	public readonly Dictionary<string, FunctionStmt> methods;
+	public readonly Dictionary<Token, Expr> default_values;
+	public readonly Dictionary<Token, FunctionStmt> methods;
 	public readonly FunctionStmt? ctor;
 	public readonly Token? inherited_name;
 
-	public ClassStmt(Token identifier, Dictionary<string, Expr> default_values, Dictionary<string, FunctionStmt> methods, FunctionStmt? ctor, Token? inherited_name){
+	public ClassStmt(Token identifier, Dictionary<Token, Expr> default_values, Dictionary<Token, FunctionStmt> methods, FunctionStmt? ctor, Token? inherited_name){
 		this.identifier = identifier;
 		this.default_values = default_values;
 		this.methods = methods;

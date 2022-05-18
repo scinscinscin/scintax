@@ -6,7 +6,10 @@ class Parser{
 	private Token CurrentToken { get => Tokens[CurrentIdx]; }
 	private Token PreviousToken { get => Tokens[CurrentIdx - 1]; }
 	private Token NextToken { get => Tokens[CurrentIdx + 1]; }
-	public Parser(List<Token> tokens, bool isREPL) { this.Tokens = tokens; this.isREPL = isREPL; }
+	public Parser(List<Token> tokens, bool isREPL) {
+		this.Tokens = tokens.Where((tok) => tok.type != TokenType.COMMENT).ToList();
+		this.isREPL = isREPL;
+	}
 	
 	// parsing infrastructure{{{
 	private bool match(params TokenType[] types){
@@ -207,17 +210,17 @@ class Parser{
 		return new VariableStmt(tok, initializer);	
 	}
 
-	public Stmt function_declaration(){
+	public Stmt function_declaration(bool isMethod = false){
 		CheckAndConsume(TokenType.IDENTIFIER, "Expected function name");
 		Token functionName = PreviousToken;
 		
 		CheckAndConsume(TokenType.L_PAREN, "Expected L_PAREN before function argument list");
 		
 		// Get all the argument names of the function
-		List<string> arg_names = new List<string>();
+		List<Token> arg_names = new List<Token>();
 		while(CurrentToken.type != TokenType.R_PAREN){
 			CheckAndConsume(TokenType.IDENTIFIER, "Expected argument name.");
-			arg_names.Add(PreviousToken.lexeme);
+			arg_names.Add(PreviousToken);
 			match(TokenType.COMMA);
 		}	
 
@@ -225,15 +228,15 @@ class Parser{
 		CheckAndConsume(TokenType.L_BRACE, "Expected L_BRACE in the beginning of function body");
 		Stmt block = block_statement();
 
-		return new FunctionStmt(functionName, arg_names, block);
+		return new FunctionStmt(functionName, arg_names, block, isMethod);
 	}
 	
 	public Stmt class_declaration(){
 		CheckAndConsume(TokenType.IDENTIFIER, "Expected class name");
 		Token class_name = PreviousToken;
 		Token? inherited_name = null;
-		Dictionary<string, Expr> default_values = new Dictionary<string, Expr>();
-		Dictionary<string, FunctionStmt> methods = new Dictionary<string, FunctionStmt>();
+		Dictionary<Token, Expr> default_values = new Dictionary<Token, Expr>();
+		Dictionary<Token, FunctionStmt> methods = new Dictionary<Token, FunctionStmt>();
 		FunctionStmt? ctor_method = null;
 
 		// handle inheritance here
@@ -248,13 +251,13 @@ class Parser{
 				VariableStmt variable_stmt = (VariableStmt) variable_declaration();
 				if(variable_stmt.val == null)
 					throw new Exception("Expected default value for class member declaration");
-				default_values[variable_stmt.identifier.lexeme] = variable_stmt.val;
+				default_values[variable_stmt.identifier] = variable_stmt.val;
 			}else if(NextToken.type == TokenType.L_PAREN){
-				FunctionStmt new_function = (FunctionStmt) function_declaration();
+				FunctionStmt new_function = (FunctionStmt) function_declaration(isMethod: true);
 				if(new_function.identifier.lexeme == class_name.lexeme)
 					ctor_method = new_function;
 				else
-					methods[new_function.identifier.lexeme] = new_function;
+					methods[new_function.identifier] = new_function;
 			}
 
 			else

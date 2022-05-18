@@ -1,23 +1,34 @@
-class Env {
-	private readonly Env? enclosing = null;
-	private readonly Dictionary<string, SIMPValue> dict = new Dictionary<string, SIMPValue>();
-	public Env(Env? enclosing = null){ this.enclosing = enclosing; }
+class Env<T> {
+	private readonly Env<T>? enclosing = null;
+	private readonly Dictionary<string, T> dict = new Dictionary<string, T>();
+	public Env(Env<T>? enclosing = null){ this.enclosing = enclosing; }
 
-	public void define(string key, SIMPValue val){
+	public void define(string key, T val){
 		dict.Add(key, val);
 	}
 
-	public SIMPValue get(Token name){ return get(name.lexeme); }
+	public T get(Token name){ return get(name.lexeme); }
 
-	public SIMPValue get(string name){
+	public T get(string name){
 		if(dict.ContainsKey(name)) return dict[name];
 		if(enclosing != null) return enclosing.get(name);
 		throw new Exception($"Tried to fetch undefined variable {name}");
 	}
 
-	public void assign(Token name, SIMPValue val){
+	public void assign(Token name, T val){
 		if(dict.ContainsKey(name.lexeme)) { dict[name.lexeme] = val; return; }
 		if(enclosing != null) { enclosing.assign(name, val); }
 		else throw new Exception($"Tried to assign to an undefined variable {name.lexeme}");
+	}
+
+	public T? get_no_fail(string name){
+		if(dict.ContainsKey(name)) return dict[name];
+		if(enclosing != null) return enclosing.get_no_fail(name);
+		else return default(T);
+	}
+
+	public void assign_no_fail(string name, T val){
+		if(dict.ContainsKey(name)) { dict[name] = val; return; }
+		if(enclosing != null) { enclosing.assign_no_fail(name, val); }
 	}
 }

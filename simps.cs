@@ -110,8 +110,8 @@ class SIMPValueException : Exception {
 }
 
 class SIMPFunction : SIMPValue, Callable {
-	private readonly Env defined_env; // current environment when the function was defined
-	private readonly List<string>? arg_names = null;
+	private readonly Env<SIMPValue> defined_env; // current environment when the function was defined
+	private readonly List<Token>? arg_names = null;
 	private readonly int arity; // the number of parameters that it takes
 	
 	// the things to call
@@ -119,7 +119,7 @@ class SIMPFunction : SIMPValue, Callable {
 	public readonly Func<List<SIMPValue>, SIMPValue>? native_fn = null;
 
 	public SIMPFunction(
-			Env defined_env, List<string>? arg_names = null, int arity = 0,
+			Env<SIMPValue> defined_env, List<Token>? arg_names = null, int arity = 0,
 			Stmt? body = null, Func<List<SIMPValue>, SIMPValue>? native_fn = null
 	){
 		this.defined_env = defined_env;
@@ -143,11 +143,11 @@ class SIMPFunction : SIMPValue, Callable {
 		if(native_fn != null) return native_fn(parameters);
 		
 		// Creates a new environment and defines all the arguments in arg_names based on the parameters given
-		Env currentEnv = interpreter.env;
-		interpreter.env = new Env(defined_env);
+		Env<SIMPValue> currentEnv = interpreter.env;
+		interpreter.env = new Env<SIMPValue>(defined_env);
 		if(arg_names != null)
 			for(int i = 0; i < arity; i++)
-				interpreter.env.define(arg_names[i], parameters[i]);
+				interpreter.env.define(arg_names[i].lexeme, parameters[i]);
 
 		SIMPValue return_value = new SIMPNull();
 		try{
@@ -161,7 +161,7 @@ class SIMPFunction : SIMPValue, Callable {
 	}
 
 	public int GetArity(){ return arity; }
-	public List<string>? GetArgNames(){ return arg_names; }
+	public List<Token>? GetArgNames(){ return arg_names; }
 
 	public override string GetString(){ return native_fn != null ? "<native fn>" : "[SIMPFunction]"; }
 	public override string GetPrettyString(){ return Yellow("[Function]"); }
@@ -172,8 +172,8 @@ class SIMPFunction : SIMPValue, Callable {
 class SIMPClassConstructor : SIMPValue, Callable {
 	public readonly string class_name;
 	public readonly string? inherited_class_name = null;
-	public readonly Dictionary<string, Expr> default_values;
-	public readonly Dictionary<string, FunctionStmt> methods;
+	public readonly Dictionary<Token, Expr> default_values;
+	public readonly Dictionary<Token, FunctionStmt> methods;
 	public readonly FunctionStmt? ctor_method = null;
 
 	public SIMPClassConstructor(ClassStmt stmt){
@@ -190,16 +190,16 @@ class SIMPClassConstructor : SIMPValue, Callable {
 		Dictionary<string, SIMPValue>	map = new Dictionary<string, SIMPValue>();
 		SIMPClassInstance newInstance = new SIMPClassInstance(class_name, map);
 		
-		Env this_env = new Env(interpreter.env);
-		Env base_env = new Env(this_env);
+		Env<SIMPValue> this_env = new Env<SIMPValue>(interpreter.env);
+		Env<SIMPValue> base_env = new Env<SIMPValue>(this_env);
 
 		this_env.define("this", newInstance);
 		ApplyInheritance(interpreter, newInstance, this_env, base_env);
 	
 		// add default values and methods to the class instance
-		foreach(var item in default_values) map[item.Key] = interpreter.evaluate(item.Value);
+		foreach(var item in default_values) map[item.Key.lexeme] = interpreter.evaluate(item.Value);
 		foreach(var func in methods){
-			map[func.Key] = new SIMPFunction(
+			map[func.Key.lexeme] = new SIMPFunction(
 					defined_env: base_env, // if there is a superclass, it now has access to "base" 
 					arg_names: func.Value.arg_names,
 					body: func.Value.body
@@ -217,19 +217,19 @@ class SIMPClassConstructor : SIMPValue, Callable {
 		return newInstance;
 	}
 
-	public void ApplyInheritance(Interpreter interpreter, SIMPClassInstance instance, Env this_env, Env higher_env){
+	public void ApplyInheritance(Interpreter interpreter, SIMPClassInstance instance, Env<SIMPValue> this_env, Env<SIMPValue> higher_env){
 		if(inherited_class_name == null) return; 
 		SIMPValue super = interpreter.env.get(inherited_class_name); // get the superclass constructor
 		
 		if(super is SIMPClassConstructor superclass){
 			// Create environment where superclass will attatch methods to
-			Env base_env = new Env(this_env);
+			Env<SIMPValue> base_env = new Env<SIMPValue>(this_env);
 			superclass.ApplyInheritance(interpreter, instance, this_env, base_env);
 			
 			// Add the superclass methods properties in a dictionary
 			Dictionary<string, SIMPValue> method_map = new Dictionary<string, SIMPValue>();
 			foreach(var method in superclass.methods){
-				method_map[method.Key] = new SIMPFunction(
+				method_map[method.Key.lexeme] = new SIMPFunction(
 					defined_env: base_env,
 					arg_names: method.Value.arg_names,
 					body: method.Value.body
@@ -238,7 +238,7 @@ class SIMPClassConstructor : SIMPValue, Callable {
 
 			// Add all the superclass properties to the instance dict
 			foreach(var member in superclass.default_values)
-				instance.map[member.Key] = interpreter.evaluate(member.Value);
+				instance.map[member.Key.lexeme] = interpreter.evaluate(member.Value);
 				
 			// Define base as the superclass in the subclass instance
 			higher_env.define("base", new SIMPClassInstance( 
@@ -261,7 +261,7 @@ class SIMPClassConstructor : SIMPValue, Callable {
 	}
 
 	public int GetArity(){ return ctor_method != null ? ctor_method.arg_names.Count : 0; }
-	public List<string>? GetArgNames(){ return ctor_method?.arg_names; }
+	public List<Token>? GetArgNames(){ return ctor_method?.arg_names; }
 	
 	public override string GetString(){ return "[SIMPClassConstructor]"; }
 	public override string GetPrettyString(){ return Yellow("[SIMPClassConstructor]"); }
@@ -301,6 +301,6 @@ interface DotAccessible{
 
 interface Callable{
 	public int GetArity();
-	public List<string>? GetArgNames();
+	public List<Token>? GetArgNames();
 	public SIMPValue Call(Interpreter interpreter, List<SIMPValue> parameters);
 }

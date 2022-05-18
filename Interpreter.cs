@@ -2,10 +2,10 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	private readonly bool isREPL;
 	public Interpreter(bool isREPL){ 
 		this.isREPL = isREPL;
-		global_env = new Env();
+		global_env = new Env<SIMPValue>();
 		env = global_env;
 	
-		// define native functions
+		// define native functions{{{
 		global_env.define("epoch", new SIMPFunction(
 			defined_env: global_env,
 			native_fn: (List<SIMPValue> parameters) => {
@@ -44,10 +44,10 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 				return new SIMPNull();
 			}
 		));
-	}
+	}/*}}}*/
 
-	private readonly Env global_env;
-	public Env env;
+	private readonly Env<SIMPValue> global_env;
+	public Env<SIMPValue> env;
 
 	public static bool IsEqual(object? a, object? b){
 		if(a == null && b == null) return true;
@@ -181,7 +181,7 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 		foreach(var param in expr.parameters) parameters.Add(evaluate(param));
 
 		if(function is Callable CallableFunction)
-			return CallableFunction.Call(this, parameters);	
+			return CallableFunction.Call(this, parameters);
 		
 		throw new Exception("Attempted to call an uncallable value");
 	}
@@ -234,8 +234,8 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	}
 
 	public void visitBlockStmt(BlockStmt stmt){
-		Env currentEnv = env;
-		this.env = new Env(env);
+		Env<SIMPValue> currentEnv = env;
+		this.env = new Env<SIMPValue>(env);
 		foreach(var statement in stmt.statements) execute(statement);
 		this.env = currentEnv;
 	}

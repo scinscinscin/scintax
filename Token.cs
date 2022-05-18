@@ -1,6 +1,5 @@
 enum TokenType{
-	NONE,
-
+	NONE, COMMENT, 
 	IDENTIFIER, STRING_LITERAL, NUMBER_LITERAL, FALSE, TRUE, NULL,
 
 	// Basic grammar
@@ -29,12 +28,16 @@ class Token{
 	public readonly string lexeme;
 	public readonly int line;
 	public readonly object? val;
+	public readonly int starting_idx;
+	public readonly int ending_idx;
 
-	public Token(TokenType _type, string _lexeme, int _line, object? _val){
-		type = _type;
-		lexeme = _lexeme;
-		line = _line;
-		val = _val;
+	public Token(TokenType type, string lexeme, int line, object? val, int starting_idx, int ending_idx){
+		this.type = type;
+		this.lexeme = lexeme;
+		this.line = line;
+		this.val = val;
+		this.starting_idx = starting_idx;
+		this.ending_idx = ending_idx;
 	}
 
 	public void PrintToConsole(){
