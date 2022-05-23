@@ -1,3 +1,6 @@
+using scintax;
+namespace ssh;
+
 enum DefType{
 	DEFAULT,
 	VARIABLE,

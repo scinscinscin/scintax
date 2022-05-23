@@ -1,3 +1,6 @@
+using scintax;
+namespace ssh; 
+
 enum Kind{
 	NONE, COMMENT,
 	VARIABLE_NAME,

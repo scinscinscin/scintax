@@ -1,5 +1,8 @@
+namespace scintax;
+
 class Lexer{
-	private static Dictionary<string, TokenType> dict = new Dictionary<string, TokenType>();
+	// initialize token dictionary
+	private static Dictionary<string, TokenType> dict = new Dictionary<string, TokenType>();/*{{{*/
 	static Lexer(){
 		dict.Add("if", TokenType.IF);	
 		dict.Add("else", TokenType.ELSE);	
@@ -21,10 +24,11 @@ class Lexer{
 		dict.Add("false", TokenType.FALSE);
 		dict.Add("null", TokenType.NULL);
 		dict.Add("return", TokenType.RETURN);
-	}
+	}/*}}}*/
 	
 	public readonly string FileContents;	// input string
 	public readonly List<Token> tokens = new List<Token>();	// output tokens
+	public bool hadError { get; private set; } = false;
 
 	private int CurrentLine = 1;
 	private int CurrentIdx = 0;
@@ -35,12 +39,8 @@ class Lexer{
 	private char NextChar { get => FileContents[CurrentIdx + 1]; }
 	public bool Finished { get => FileContents.Length <= CurrentIdx; }
 	
-	public Lexer(string FileContents){ this.FileContents = FileContents; }
+	private Lexer(string FileContents){ this.FileContents = FileContents; }
 
-	private static bool IsAlphabetical(char a) { return (a >= 'A' && a <= 'Z') || (a >= 'a' && a <= 'z') || a == '_'; }
-	private static bool IsNumeric(char a) { return a >= '0' && a <= '9'; }
-	private static bool IsAlphanumeric(char a) { return IsAlphabetical(a) || IsNumeric(a); }
-	
 	public Token CreateNewToken(TokenType type, object? val, bool isEOF = false){
 		string lexeme = isEOF ? "\0" : CurrentLexeme;
 		return new Token(type, lexeme, CurrentLine, val, StartingIdxOfCurrentLexeme, CurrentIdx);
@@ -69,6 +69,12 @@ class Lexer{
 		while(CurrentChar != '"'){
 			val += CurrentChar;
 			CurrentIdx++;
+			
+			if(CurrentChar == '\0'){
+				CurrentIdx--;
+				error("Expected \", received EOF");
+				break;
+			};
 		}
 		
 		val = val.Replace("\\n", "\n"); // handle new lines
@@ -79,7 +85,7 @@ class Lexer{
 	private void identifier(){
 		string iden = "";
 
-		while(IsAlphanumeric(CurrentChar)){
+		while(CurrentChar.IsAlphanumeric()){
 			iden += CurrentChar;
 			CurrentIdx++;
 		}
@@ -95,14 +101,14 @@ class Lexer{
 		bool hasHitDecimal = false;
 		string numstr = "";
 
-		while(IsNumeric(CurrentChar) || CurrentChar == '.'){
+		while(CurrentChar.IsNumeric()|| CurrentChar == '.'){
 			if(CurrentChar == '.'){
 				if(hasHitDecimal == false){
 					hasHitDecimal = true;
 					numstr += '.';
 				}else{
 					// a decimal point has already been found
-					error("Multilpe decimal points found on a numerical value");
+					error("Multiple decimal points found on a numerical value");
 				}
 			}else{
 				numstr += CurrentChar;
@@ -159,8 +165,8 @@ class Lexer{
 		else if(CurrentChar == '?') tokenType = match('?') ? TokenType.QUESTION_QUESTION : TokenType.QUESTION;
 
 		else if(CurrentChar == '"') stringLiteral();
-		else if(IsNumeric(CurrentChar)) numberLiteral();
-		else if(IsAlphanumeric(CurrentChar)) identifier();
+		else if(CurrentChar.IsNumeric()) numberLiteral();
+		else if(CurrentChar.IsAlphanumeric()) identifier();
 		else error($"Unexpected character '{CurrentChar}'");
 
 		if(tokenType != TokenType.NONE){
@@ -179,8 +185,18 @@ class Lexer{
 	}
 
 	private void error(string msg){
+		hadError = true;
 		string err = $"Line {CurrentLine}. {msg}";
-		Console.WriteLine(err);
+	}
+
+	public static List<Token> GenerateTokens(string? file = null, string? path = null){
+		if(file == null && path == null)
+			throw new Exception("Cannot generate tokens because there is no input");
+		if(file == null) file = File.ReadAllText(path!);
+		
+		Lexer lexer = new Lexer(file);
+		while(!lexer.Finished) lexer.parse();
+		return lexer.tokens;
 	}
 }
 

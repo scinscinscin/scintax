@@ -1,14 +1,13 @@
 ﻿using static Crayon.Output;
+using scintax;
+using simp;
+using ssh;
+using scat;
+using sed;
 
 class Program{
-	public static List<Token> generateTokens(string code){
-		Lexer lexer = new Lexer(code);
-		while(!lexer.Finished) lexer.parse();
-		return lexer.tokens;
-	}
-
 	public static void repl(){
-		Interpreter interpreter = new Interpreter(isREPL: true);
+		Interpreter interpreter = new Interpreter(isREPL: true, stdlib: StandardLibrary.attach);
 		// handle Ctrl+C gracefully
 		Console.CancelKeyPress += delegate { Console.Write("\n"); Environment.Exit(0); };
 		Console.Write(Bold(Green("scintax interpreter & mathematical processor")));
@@ -17,45 +16,50 @@ class Program{
 			Console.Write("\n>> ");
 			string? code = Console.ReadLine();
 			if(code != null && code.Length != 0){
-				List<Stmt> statements = new Parser(generateTokens(code), isREPL: true).parse();	
+				List<Stmt> statements = new Parser(Lexer.GenerateTokens(file: code), isREPL: true).parse();	
 				interpreter.interpret(statements);
 			}
 		}
 	}
 
-	public static void Main(string[] args){
-		if(args.Length == 0) repl();
+	public static void Main(string[] rawArgs){
+		ArgumentParser args = new ArgumentParser(rawArgs).parse();
+		if(args.input.Count == 0) repl();
+		
+		switch(args.input[0]){
+			case "scat":
+				string? themePath = args.flags.ContainsKey("theme") ? args.flags["theme"][0] : null;
+				Scat scat = new Scat(customThemePath: themePath);
+		
+				for(int i = 1; i < args.input.Count; i++){
+					string file = File.ReadAllText(args.input[i]);
+					List<Token> tokens = Lexer.GenerateTokens(file: file);
+					SemanticHighlighter highlighter = new SemanticHighlighter(tokens);
+					highlighter.highlight();
+					scat.Print(file, highlighter.props);
+				}
+				break;
 
-		for(int i = 0; i < args.Length; i++){
-			string file = File.ReadAllText(args[i]);
-			Lexer lexer = new Lexer(file);
-			while(lexer.Finished == false) lexer.parse();
-			// Console.WriteLine("Lexer has finished tokenizing. Generated {0} tokens.", lexer.tokens.Count);
-			// Uncomment to list out all of the generated tokens
-			// foreach(var token in lexer.tokens) token.PrintToConsole();
+			case "sed":
+				args.input.RemoveAt(0);
+				new Sed(args).Run();
+				break;
 			
-			Parser parser = new Parser(lexer.tokens, isREPL: false);
-			List<Stmt> statements = parser.parse();
-			// Console.WriteLine("Parser has finished parsing. Generated {0} statements", statements.Count);
+			case "run":
+				args.input.RemoveAt(0);
+				goto default;
 			
-			SemanticHighlighter highlighter = new SemanticHighlighter(lexer.tokens);
-			highlighter.highlight();
-			for(int chidx = 0; chidx < file.Length; chidx++){
-				Kind currentKind = chidx >= highlighter.props.Count ? Kind.NONE : highlighter.props[chidx];
-				byte[] colors = SyntaxHighlighter.colorMap[currentKind];
-				Console.Write(Rgb(colors[0], colors[1], colors[2]).Text($"{ file[chidx] }"));
-			}
+			default:
+				for(int i = 0; i < args.input.Count; i++){
+					List<Token> tokens = Lexer.GenerateTokens(path: args.input[i]);
+					Parser parser = new Parser(tokens, isREPL: false);
+					List<Stmt> statements = parser.parse();
 
-			Interpreter interpreter = new Interpreter(isREPL: false);
-			interpreter.interpret(statements);
-			//Console.WriteLine(interpreter.expression(headnode).GetRaw());
-			//Console.WriteLine("The interpreter has finished running");
+					Interpreter interpreter = new Interpreter(stdlib: StandardLibrary.attach, isREPL: false);
+					interpreter.interpret(statements);
+				}
+				break;
 		}
 	}
 }
 
-class ArgumentParser{
-	private Dictionary<string, object?> map = new Dictionary<string, object?>();
-	public ArgumentParser(){}
-	
-}

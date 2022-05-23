@@ -1,5 +1,8 @@
+namespace scintax;
+
 class Parser{
 	private readonly bool isREPL;
+	public bool hadError { get; private set; } = false;
 
 	public readonly List<Token> Tokens;
 	private int CurrentIdx = 0;
@@ -193,11 +196,16 @@ class Parser{
 	/*}}}*/
 	
 	// statement parsers{{{
-	public Stmt declaration(){
-		if(match(TokenType.VAR)) return variable_declaration();
-		else if(match(TokenType.FUNCTION)) return function_declaration();
-		else if(match(TokenType.CLASS)) return class_declaration();
-		return statement();
+	public Stmt? declaration(){
+		try{
+			if(match(TokenType.VAR)) return variable_declaration();
+			else if(match(TokenType.FUNCTION)) return function_declaration();
+			else if(match(TokenType.CLASS)) return class_declaration();
+			return statement();
+		}catch{
+			sync();
+			return null;
+		}
 	}
 
 	public Stmt variable_declaration(){
@@ -280,7 +288,8 @@ class Parser{
 		List<Stmt> statements = new List<Stmt>();
 		
 		while(CurrentToken.type != TokenType.R_BRACE && CurrentToken.type != TokenType.EOF){
-			statements.Add(declaration());
+			Stmt? stmt = declaration();
+			if(stmt != null) statements.Add(stmt);
 		}
 		
 		CheckAndConsume(TokenType.R_BRACE, "Expected R_BRACE after block statement");
@@ -322,11 +331,35 @@ class Parser{
 		return new ReturnStmt(return_expr);
 	}
 	/*}}}*/
+
+	public void sync(){
+		hadError = true;
+		if(CurrentToken.type == TokenType.EOF) return;
+		
+		// Moves until the current character is the start of a sequence
+		while(true){
+			CurrentIdx++;
+			
+			switch(CurrentToken.type){
+				case TokenType.EOF:
+				case TokenType.IF:
+				case TokenType.FOR:
+				case TokenType.WHILE:
+				case TokenType.FUNCTION:
+				case TokenType.CLASS:
+				case TokenType.VAR:
+					return;
+			}
+		}
+	}
 	
-	/* Parses a scintax program and returns a list of its statements*/ 
+	/* Parses a scintax program and returns a list of its statements */ 
 	public List<Stmt> parse(){
 		List<Stmt> statements = new List<Stmt>();
-		while(CurrentToken.type != TokenType.EOF) statements.Add(declaration());
+		while(CurrentIdx >= Tokens.Count || CurrentToken.type != TokenType.EOF){
+			Stmt? stmt = declaration();
+			if(stmt != null) statements.Add(stmt);
+		};
 		return statements;
 	} 
 }

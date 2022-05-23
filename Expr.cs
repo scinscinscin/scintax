@@ -1,4 +1,4 @@
-using System;
+namespace scintax;
 
 interface ExprVisitor<T>{
 	T visitLiteralExpr(LiteralExpr expr);

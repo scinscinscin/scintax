@@ -1,8 +1,14 @@
-# SIMP - Scintax interpreter & Mathematical Processor
+# scintax
 
 Scintax is a toy language based on Lox that follows JavaScript syntax.
 
-SIMP is a top down recursive descent parser.
+# Namespaces
+
+* scintax - scintax core parser and lexer
+* simp - scintax interpreter & mathematical processor
+* ssh - scintax semantic highlighter
+* scat - scintax cat
+* sed - scintax editor
 
 ### Roadmap
 
@@ -16,7 +22,7 @@ SIMP is a top down recursive descent parser.
 - [ ] REPL History
 - [x] Classes
 - [x] Semantic Highlighting
-- [ ] Lexer and Parser exception handling
+- [x] Lexer and Parser exception handling
 
 ### Example Programs
 

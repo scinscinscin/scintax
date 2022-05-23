@@ -9,7 +9,7 @@ for(const file of files){
 	});
 	
 	//console.log("Here are the subclasses", subclasses);
-	let output = "using System;\n\n";
+	let output = "namespace scintax;\n\n";
 	
 	const generic_parameter = tree[file].is_generic ? "<T>" : "";
 	const generic = tree[file].is_generic ? "T" : "void";

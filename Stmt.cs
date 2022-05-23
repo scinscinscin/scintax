@@ -1,4 +1,4 @@
-using System;
+namespace scintax;
 
 interface StmtVisitor{
 	void visitVariableStmt(VariableStmt stmt);

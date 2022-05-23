@@ -1,3 +1,5 @@
+namespace scintax;
+
 enum TokenType{
 	NONE, COMMENT, 
 	IDENTIFIER, STRING_LITERAL, NUMBER_LITERAL, FALSE, TRUE, NULL,

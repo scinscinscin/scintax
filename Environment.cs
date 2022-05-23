@@ -7,20 +7,18 @@ class Env<T> {
 		dict.Add(key, val);
 	}
 
-	public T get(Token name){ return get(name.lexeme); }
-
 	public T get(string name){
 		if(dict.ContainsKey(name)) return dict[name];
 		if(enclosing != null) return enclosing.get(name);
 		throw new Exception($"Tried to fetch undefined variable {name}");
 	}
 
-	public void assign(Token name, T val){
-		if(dict.ContainsKey(name.lexeme)) { dict[name.lexeme] = val; return; }
-		if(enclosing != null) { enclosing.assign(name, val); }
-		else throw new Exception($"Tried to assign to an undefined variable {name.lexeme}");
+	public void assign(string name, T val){
+		if(dict.ContainsKey(name)) { dict[name] = val; return; }
+		if(enclosing != null) { enclosing.assign_no_fail(name, val); }
+		else throw new Exception($"Tried to assign to undefined variable {name}");
 	}
-
+	
 	public T? get_no_fail(string name){
 		if(dict.ContainsKey(name)) return dict[name];
 		if(enclosing != null) return enclosing.get_no_fail(name);

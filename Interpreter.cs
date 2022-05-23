@@ -1,52 +1,17 @@
+using scintax;
+namespace simp;
+
 class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	private readonly bool isREPL;
-	public Interpreter(bool isREPL){ 
+	public Interpreter(bool isREPL, Action<Env<SIMPValue>> stdlib){ 
 		this.isREPL = isREPL;
-		global_env = new Env<SIMPValue>();
-		env = global_env;
-	
-		// define native functions{{{
-		global_env.define("epoch", new SIMPFunction(
-			defined_env: global_env,
-			native_fn: (List<SIMPValue> parameters) => {
-				long unix_seconds = DateTimeOffset.Now.ToUnixTimeSeconds();
-				return new SIMPNumber(unix_seconds);
-			}
-		));
-
-		global_env.define("int_to_char", new SIMPFunction(
-			defined_env: global_env,
-			arity: 1,
-			native_fn: (List<SIMPValue> parameters) => {
-				int to_be_converted = (int) parameters[0].GetDouble();
-				char char_convert = (char) to_be_converted;
-				return new SIMPString(char_convert.ToString());
-			}
-		));
+		env = global_env = new Env<SIMPValue>();
 		
-		global_env.define("readline", new SIMPFunction(
-			defined_env: global_env,
-			arity: 1,
-			native_fn: (List<SIMPValue> parameters) => {
-				string to_be_printed = parameters[0].GetString();
-				Console.Write(to_be_printed);
-				string val = Console.ReadLine() ?? "";
-				return new SIMPString(val);
-			}
-		));
+		// define native functions
+		stdlib(global_env);
+	}
 
-		global_env.define("print", new SIMPFunction(
-			defined_env: global_env,
-			arity: 1,
-			native_fn: (List<SIMPValue> parameters) => {
-				string to_be_printed = parameters[0].GetString();
-				Console.Write(to_be_printed);
-				return new SIMPNull();
-			}
-		));
-	}/*}}}*/
-
-	private readonly Env<SIMPValue> global_env;
+	public readonly Env<SIMPValue> global_env;
 	public Env<SIMPValue> env;
 
 	public static bool IsEqual(object? a, object? b){
@@ -130,7 +95,7 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 	}
 
 	public SIMPValue visitVariableExpr(VariableExpr expr){
-		return env.get(expr.identifier);
+		return env.get(expr.identifier.lexeme);
 	}
 	
 	public SIMPValue visitAssignmentExpr(AssignmentExpr expr){
@@ -139,7 +104,7 @@ class Interpreter : ExprVisitor<SIMPValue>, StmtVisitor {
 
 		if(expr.writelocation is VariableExpr){
 			// If the write location is immediately a variable, that means we can assign to it
-			env.assign(((VariableExpr) expr.writelocation).identifier, a);
+			env.assign(((VariableExpr) expr.writelocation).identifier.lexeme, a);
 		}else if(expr.writelocation is DotAccessExpr writelocation){
 			// A DotAccessExpr has two parts, the identifier of what to access, and the thing to look inside of
 			// The thing to look inside of has a couple of methods to write or read data off of it

@@ -1,4 +1,6 @@
 using static Crayon.Output;
+using scintax;
+namespace simp;
 
 abstract class SIMPValue {
 	public virtual double GetDouble(){ return 0; }
